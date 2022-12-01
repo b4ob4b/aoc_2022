@@ -15,7 +15,7 @@ class Day01: Day(inputType = IO.TYPE.INPUT) {
             .max()
     }
 
-    override fun part2(): Any {
+    override fun part2(): Int {
         return calories
             .sortedDescending()
             .take(3)
