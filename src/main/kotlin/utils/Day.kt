@@ -17,6 +17,15 @@ abstract class Day(
         solveWithPerformanceMeasurement()
     }
 
+    fun test(part1: Any? = null, part2: Any? = null) {
+        if (part1 != null && part1 != part1()) {
+            throw Exception("part 1 creates wrong solution with sample data")
+        }
+        if (part2 != null && part2 != part2()) {
+            throw Exception("part 2 creates wrong solution with sample data")
+        }
+    }
+
     abstract fun part1(): Any?
 
     abstract fun part2(): Any?
