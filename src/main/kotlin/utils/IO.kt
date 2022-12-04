@@ -45,10 +45,11 @@ object IO {
             import utils.IO
             
             fun main() {
+                Day$formattedDay(IO.TYPE.SAMPLE).test()
                 Day$formattedDay().solve()
             }
             
-            class Day$formattedDay: Day(inputType = IO.TYPE.SAMPLE) {
+            class Day$formattedDay(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType) {
                 override fun part1(): Any? {
                     return "not yet implement"
                 }
