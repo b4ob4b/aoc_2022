@@ -9,71 +9,48 @@ fun main() {
 
 class Day05(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType) {
 
-    val groups = input.split("\n\n")
-    val first = groups[0].splitLines()
-    val horizontalLenght = first.map { it.length }.max()
-    val stacksRaw = first.dropLast(1)
-        .map {
-            val row = it.split("")
-            if (row.size < horizontalLenght) {
-                row + (0..(horizontalLenght - row.size)).toList().map { " " }
-            } else row
-        }
-    val stackPositions = (0..10).map { ((it + 0.5) * 4).toInt() }.filter { it < horizontalLenght }
+    private val data = input.split("\n\n").map { it.splitLines() }
+    private val commands = data[1].parseCommands()
 
-    val stacksRaw2 = stacksRaw.map { it.slice(stackPositions) }
+    private fun List<String>.getStackPositions() = generateSequence(1) { it + 2 }.map { it * 2 - 1 }.takeWhile { it <= this[0].length }.toList()
 
-    private fun getStacks(): List<ArrayDeque<String>> {
-        val stacks = stackPositions.indices.map { ArrayDeque<String>() }
-
-        for (height in stacksRaw2.indices) {
-            for (stackNumber in stackPositions.indices) {
-                val crate = stacksRaw2[height][stackNumber]
-                if (crate != " ") stacks[stackNumber].addFirst(crate)
+    private fun List<String>.parseStacks(): List<ArrayDeque<Char>> {
+        val stackPositions = this.getStackPositions()
+        val stacks = stackPositions.indices.map { ArrayDeque<Char>() }
+        this.forEach { line ->
+            stackPositions.forEachIndexed { index, position ->
+                val crate = line[position]
+                if (crate != ' ') stacks[index].add(line[position])
             }
         }
         return stacks
     }
 
+    data class Command(val amount: Int, val from: Int, val to: Int)
 
-    val commands = groups[1].splitLines()
-        .map { it.split(" ") }
-        .map { it.slice(setOf(1, 3, 5)) }
-        .map { it.map { it.toInt() } }
+    private fun List<String>.parseCommands() = this
+        .map { it.split(" ").slice(setOf(1, 3, 5)) }
+        .map { it.map(String::toInt) }
+        .map { (amount, from, to) -> Command(amount, from - 1, to - 1) }
 
-    override fun part1(): Any? {
-        val stacks = getStacks()
-        for (command in commands) {
-            val amount = command[0]
-            val from = command[1] - 1
-            val to = command[2] - 1
-
-            for (step in (1..amount)) {
-                val crate = stacks[from].removeLast()
-
-                stacks[to].add(crate)
+    override fun part1(): String {
+        val stacks = data[0].dropLast(1).parseStacks()
+        commands.forEach { command ->
+            repeat(command.amount) {
+                stacks[command.to].addFirst(stacks[command.from].removeFirst())
             }
         }
-        return stacks.map { it.last() }.joinToString("")
+        return stacks.map { it.first() }.joinToString("")
     }
 
-    override fun part2(): Any? {
-        val stacks = getStacks()
-        for (command in commands) {
-            val amount = command[0]
-            val from = command[1] - 1
-            val to = command[2] - 1
-
-            val crate = ArrayDeque<String>()
-            for (step in (1..amount)) {
-                crate.add(stacks[from].removeLast())
-            }
-            for (step in (1..amount)) {
-                stacks[to].add(crate.removeLast())
+    override fun part2(): String {
+        val stacks = data[0].dropLast(1).parseStacks()
+        commands.forEach { command ->
+            (0 until command.amount).reversed().forEach {
+                stacks[command.to].addFirst(stacks[command.from].removeAt(it))
             }
         }
-        return stacks.map { it.last() }.joinToString("")
+        return stacks.map { it.first() }.joinToString("")
     }
-
 
 }
