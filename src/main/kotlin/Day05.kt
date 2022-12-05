@@ -7,22 +7,24 @@ fun main() {
     Day05().solve()
 }
 
-class Day05(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType) {
+class Day05(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("Supply Stacks", inputType = inputType) {
 
     private val data = input.split("\n\n").map { it.splitLines() }
     private val commands = data[1].parseCommands()
 
-    private fun List<String>.getStackPositions() = generateSequence(1) { it + 2 }.map { it * 2 - 1 }.takeWhile { it <= this[0].length }.toList()
-
-    private fun List<String>.parseStacks(): List<ArrayDeque<Char>> {
-        val stackPositions = this.getStackPositions()
-        val stacks = stackPositions.indices.map { ArrayDeque<Char>() }
-        this.forEach { line ->
-            stackPositions.forEachIndexed { index, position ->
-                val crate = line[position]
-                if (crate != ' ') stacks[index].add(line[position])
+    private fun List<String>.parseStacks(): List<ArrayDeque<String>> {
+        val rows = this.map { row ->
+            row.chunked(4).map {
+                "[A-Z]".toRegex().find(it)?.value
             }
         }
+        val stacks = rows.first().indices.map { ArrayDeque<String>() }
+        rows
+            .forEach { line ->
+                line.forEachIndexed { index, crate ->
+                    if (crate != null) stacks[index].add(crate)
+                }
+            }
         return stacks
     }
 
