@@ -7,7 +7,7 @@ import kotlin.io.path.absolute
 
 
 fun main() {
-    createNewDay(3, true)
+    createNewDay(6, true)
 }
 
 object IO {
