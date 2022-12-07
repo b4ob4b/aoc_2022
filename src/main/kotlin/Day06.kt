@@ -15,11 +15,11 @@ class Day06(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("Tuning Trouble", inputTyp
         .indexOfFirst { it.toSet().size == startOfPacketSize }
         .let { it + startOfPacketSize }
 
-    override fun part1(): Any? {
+    override fun part1(): Int {
         return signal.calculateSignalStart(4)
     }
 
-    override fun part2(): Any? {
+    override fun part2(): Int {
         return signal.calculateSignalStart(14)
     }
 }           
