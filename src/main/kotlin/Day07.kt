@@ -9,70 +9,65 @@ fun main() {
 
 class Day07(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("No Space Left On Device", inputType = inputType) {
 
-    val origin = Dir(name = "/")
+    private val origin = File("/", 0, parent = null)
+    private val terminalOutput = input.split("$ ").drop(2)
+    
+    enum class Type { File, Directory }
 
-    data class File(val name: String, val size: Int)
-    data class Dir(
+    data class File(
         val name: String,
-        val dirs: MutableList<Dir> = mutableListOf(),
-        val files: MutableList<File> = mutableListOf(),
-        val parent: Dir? = null,
-        var size: Int = 0
+        var size: Int = 0,
+        val children: MutableList<File> = mutableListOf(),
+        val parent: File?,
+        val type: Type = Type.Directory
     ) {
-        fun add(dir: Dir) {
-            dirs.add(dir)
-        }
 
-        fun add(file: File) {
-            files.add(file)
-        }
+        fun add(file: File) = children.add(file)
 
-        fun changeDirectory(name: String): Dir? {
-            return dirs.singleOrNull { it.name == name }
+        fun add(files: List<File>) = files.forEach(children::add)
+
+        fun changeDirectory(name: String): File? {
+            return children.singleOrNull { it.name == name }
         }
 
         fun calculateSize() {
-            dirs.forEach { it.calculateSize() }
-            size += files.map { it.size }.sum() + dirs.sumOf { it.size }
+            children.forEach { it.calculateSize() }
+            size += children.map { it.size }.sum()
         }
 
         fun findDirsWithLessSizeThan(maxSize: Int): List<Int> {
             val sizes = mutableListOf<Int>()
-            if (this.size <= maxSize) sizes.add(this.size)
-            sizes.addAll(0, dirs.flatMap { it.findDirsWithLessSizeThan(maxSize) })
+            if (this.type == Type.Directory && this.size <= maxSize) sizes.add(this.size)
+            sizes.addAll(0, children.flatMap { it.findDirsWithLessSizeThan(maxSize) })
             return sizes
-        }
-
-        override fun toString(): String {
-            return "Dir(name='$name', dirs=$dirs, files=$files, size=$size)"
         }
     }
 
 
-    override fun part1(): Int {
+    private fun String.changeDirectory(currentDirectory: File): File {
+        val newDirectory = this.split(" ").last()
+        return if (newDirectory == "..") currentDirectory.parent!! else currentDirectory.changeDirectory(newDirectory)!!
+    }
 
-        var current = origin
-        input.split("$ ").drop(2)
-            .map {
-                if (it.startsWith("ls")) {
-                    val lines = it.splitLines().filter { it.isNotBlank() }.drop(1)
-                    lines.forEach {
-                        if (it.startsWith("dir")) {
-                            current.add(Dir(it.drop(4), parent = current))
-                        } else {
-                            val info = it.split(" ")
-                            current.add(File(info[1], info[0].toInt()))
-                        }
-                    }
-                } else {
-                    val newDir = it.split(" ")[1].removeSuffix("\n")
-                    if (newDir != "..") {
-                        current = current.changeDirectory(newDir)!!
-                    } else {
-                        current = current.parent!!
-                    }
-                }
+    private fun List<String>.createFiles(currentDirectory: File) {
+        this.forEach {
+            if (it.startsWith("dir")) {
+                currentDirectory.add(File(it.split(" ").last(), parent = currentDirectory))
+            } else {
+                val (size, name) = it.split(" ")
+                currentDirectory.add(File(name, size = size.toInt(), parent = currentDirectory, type = Type.File))
             }
+        }
+    }
+
+    override fun part1(): Int {
+        var currentDirectory = origin.copy()
+        terminalOutput.map { it.splitLines().filter { it.isNotBlank() } }.forEach {
+            when (it.first().slice(0..1)) {
+                "ls" -> it.drop(1).createFiles(currentDirectory)
+                "cd" -> currentDirectory = it.single().changeDirectory(currentDirectory)
+            }
+        }
         origin.calculateSize()
         return origin.findDirsWithLessSizeThan(100000).sum()
     }
