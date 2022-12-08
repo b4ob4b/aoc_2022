@@ -12,3 +12,5 @@ fun <T> Iterable<T>.allIndicesOf(element: T) = sequence {
         index++
     }
 }
+
+fun Collection<Int>.product() = this.reduce { acc, i -> acc * i }
