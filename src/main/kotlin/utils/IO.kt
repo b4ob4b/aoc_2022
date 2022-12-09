@@ -17,7 +17,7 @@ object IO {
     private val sourceCodePath = "$basePath/src/main/kotlin"
 
     enum class TYPE(val path: String) {
-        SAMPLE("sample"), INPUT("input")
+        SAMPLE("sample"), INPUT("input"), SAMPLE2("sample2")
     }
 
     fun readFile(day: Int, type: TYPE = TYPE.INPUT): String {
