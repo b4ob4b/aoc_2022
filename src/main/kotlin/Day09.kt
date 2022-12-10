@@ -11,7 +11,7 @@ class Day09(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
 
     private val commands = input.splitLines()
         .map { it.split(" ") }
-        .map { (dir, dis) -> Command(dir.toDistance(), dis.toInt()) }
+        .map { (direction, distance) -> Command(direction.toDirection(), distance.toInt()) }
 
     private val pathHead = commands.fold(listOf(Position(0, 0))) { acc, command ->
         val currentPosition = acc.last()
@@ -20,17 +20,17 @@ class Day09(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
         }
     }
 
-    data class Command(val direction: Direction, val distance: Int)
+    data class Command(val direction: Direction4, val distance: Int)
 
-    private fun String.toDistance() = when (this) {
-        "R" -> Direction.right
-        "U" -> Direction.up
-        "D" -> Direction.down
-        "L" -> Direction.left
-        else -> Direction.down
+    private fun String.toDirection() = when (this) {
+        "R" -> Direction4.East
+        "U" -> Direction4.North
+        "D" -> Direction4.South
+        "L" -> Direction4.West
+        else -> Direction4.South
     }
 
-    private fun Position.isNearBy(other: Position) = this.getNeighbours().contains(other) || this == other
+    private fun Position.isNearBy(other: Position) = this.get8Neighbours().contains(other) || this == other
 
     private fun Position.follow(other: Position) =
         if (this.isNearBy(other)) this else Position(this.x + (other.x - this.x).sign, this.y + (other.y - this.y).sign)

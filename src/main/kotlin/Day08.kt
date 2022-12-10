@@ -7,7 +7,7 @@ fun main() {
 
 class Day08(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType) {
 
-    private val trees = input.splitLines().map { rows -> rows.toList().map { cell -> cell.toString().toInt() } }
+    private val trees = input.toGrid() { it.toInt() }
 
     private val maxEdge = trees.size - 1
     private val visibleTrees = mutableSetOf<Position>()
