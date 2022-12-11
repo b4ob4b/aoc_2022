@@ -7,7 +7,7 @@ fun main() {
 
 class Day08(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType) {
 
-    private val trees = input.toGrid() { it.toInt() }
+    private val trees = input.toGrid(mapCell = String::toInt)
 
     private val maxEdge = trees.size - 1
     private val visibleTrees = mutableSetOf<Position>()
@@ -52,7 +52,6 @@ class Day08(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
                 visibleTrees
             }
         }
-
 
     private fun Position.getViewLines() = listOf(
         ((this.y + 1)..maxEdge).map { y -> Position(this.x, y) }, // left to right

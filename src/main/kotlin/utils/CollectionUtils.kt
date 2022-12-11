@@ -2,7 +2,14 @@ package utils
 
 fun main() {
     listOf(1,2,3,1,2,1).allIndicesOf(1).toList().print()
-    //    [0, 3, 5]
+    // [0, 3, 5]
+    
+    """
+        123
+        456
+    """.trimIndent().toGrid().valueOf(Position(2,1)).print()
+    // 6
+    
 }
 
 fun <T> Iterable<T>.allIndicesOf(element: T) = sequence {
@@ -14,3 +21,6 @@ fun <T> Iterable<T>.allIndicesOf(element: T) = sequence {
 }
 
 fun Collection<Int>.product() = this.reduce { acc, i -> acc * i }
+fun Collection<Long>.product() = this.reduce { acc, i -> acc * i }
+
+fun <T> List<List<T>>.valueOf(position: Position) = this[position.y][position.x]
