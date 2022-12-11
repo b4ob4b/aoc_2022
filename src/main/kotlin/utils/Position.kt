@@ -30,7 +30,7 @@ data class Position(val x: Int, val y: Int) {
     fun doMovement(direction: Direction8): Position {
         return when (direction) {
             Direction8.North -> Position(x, y + 1)
-            Direction8.NorthEast -> Position(x+1,y+1)
+            Direction8.NorthEast -> Position(x + 1, y + 1)
             Direction8.East -> Position(x + 1, y)
             Direction8.SouthEast -> Position(x + 1, y - 1)
             Direction8.South -> Position(x, y - 1)
@@ -39,8 +39,8 @@ data class Position(val x: Int, val y: Int) {
             Direction8.NorthWest -> Position(x - 1, y + 1)
         }
     }
-    
-    fun get4Neighbours(): Sequence<Position> = sequence { 
+
+    fun get4Neighbours(): Sequence<Position> = sequence {
         Direction4.values().forEach { yield(this@Position.doMovement(it)) }
     }
 
