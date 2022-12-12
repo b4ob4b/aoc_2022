@@ -12,8 +12,8 @@ class Day12(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
 
     private fun Char.toHeight() = when (this) {
         'S' -> 0
-        'E' -> 27
-        else -> this.code - 'a'.code + 1
+        'E' -> 26
+        else -> this.code - 'a'.code
     }
 
     private fun Matrix<Int>.breadthFirstSearch(queue: ArrayDeque<Pair<Position, Int>>, goal: Int): Int {
@@ -37,17 +37,18 @@ class Day12(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
     }
 
     override fun part1(): Int {
-        val origin = heightMap.search(0).first()
-        val queue = ArrayDeque<Pair<Position, Int>>()
-        queue.add(origin to heightMap[origin])
+        val queue = heightMap.search(0).first()
+            .let { position ->
+                ArrayDeque<Pair<Position, Int>>().also { it.add(position to 0) }
+            }
         return heightMap.breadthFirstSearch(queue, goal)
     }
 
     override fun part2(): Int {
-        val queue = ArrayDeque<Pair<Position, Int>>()
-        listOf(0, 1).flatMap { heightMap.search(it) }.forEach {
-            queue.add(it to 0)
-        }
+        val queue = heightMap.search(0)
+            .fold(ArrayDeque<Pair<Position, Int>>()) { queue, position ->
+                queue.also { it.add(position to 0) }
+            }
         return heightMap.breadthFirstSearch(queue, goal)
     }
 }           

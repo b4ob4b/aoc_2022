@@ -75,15 +75,42 @@ internal class MatrixTest {
 
     @Test
     fun search() {
-        matrix.search(2).first() shouldBe Position(0,1)
-        
+        matrix.search(2).first() shouldBe Position(0, 1)
+
         Matrix(
             listOf(
                 listOf(1, 1),
                 listOf(1, 1)
             )
         ).search(1).toList() shouldContainExactlyInAnyOrder listOf(
-            Position(0,0), Position(1,0), Position(0,1), Position(1,1)
+            Position(0, 0), Position(1, 0), Position(0, 1), Position(1, 1)
+        )
+    }
+
+    @Test
+    fun `second constructor`() {
+        Matrix(2, 3) { 1 } shouldBe Matrix(
+            listOf(
+                listOf(1, 1, 1),
+                listOf(1, 1, 1)
+            )
+        )
+    }
+
+    @Test
+    fun insertAt() {
+        matrix.insertAt(Position(0,0), 0) shouldBe Matrix(
+            listOf(
+                listOf(0, 2),
+                listOf(3, 4)
+            )
+        )
+        
+        matrix.insertAt(mapOf(Position(0,0) to 0, Position(1,1) to 0)) shouldBe Matrix(
+            listOf(
+                listOf(0, 2),
+                listOf(3, 0)
+            )
         )
     }
 }
