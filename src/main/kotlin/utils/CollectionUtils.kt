@@ -23,4 +23,6 @@ fun <T> Iterable<T>.allIndicesOf(element: T) = sequence {
 fun Collection<Int>.product() = this.reduce { acc, i -> acc * i }
 fun Collection<Long>.product() = this.reduce { acc, i -> acc * i }
 
-fun <T> List<List<T>>.valueOf(position: Position) = this[position.y][position.x]
+fun <T> List<List<T>>.valueOf(position: Position) = this[position.x][position.y]
+
+fun <T> List<List<T>>.toMatrix() = Matrix(this)

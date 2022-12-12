@@ -8,8 +8,10 @@ data class Position3D(val x: Int, val y: Int, val z: Int) {
 
     operator fun plus(other: Position3D) = Position3D(x + other.x, y + other.y, z + other.z)
     
+    operator fun minus(other: Position3D) = this + other * -1
+    
     operator fun times(factor: Int) = Position3D(x * factor, y * factor, z * factor)
-
+    
     fun getNeighbours() = sequence {
         val range = -1..1
         range.forEach { x ->
