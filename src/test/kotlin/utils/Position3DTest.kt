@@ -33,4 +33,9 @@ internal class Position3DTest {
         Position3D.origin.getPathThrough(Position3D(1,1,1)).take(3).last() shouldBe Position3D(3,3,3)
         Position3D.origin.getPathThrough(Position3D(1,-1,2)).take(3).last() shouldBe Position3D(3,-3,6)
     }
+
+    @Test
+    fun minus() {
+        Position3D.origin - Position3D(1,1,2) shouldBe Position3D(-1,-1,-2)
+    }
 }
