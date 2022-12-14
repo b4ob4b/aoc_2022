@@ -34,8 +34,16 @@ fun String.binaryToDecimal() = Integer.parseInt(this, 2)
 
 fun String.extractInts(separator: String = ",") = this.split(separator).map { it.toInt() }
 
-fun String.toGrid(separator: String = "") =
-    this.splitLines().map { line -> line.split(separator).filter { it.isNotBlank() } }
+fun String.toGrid(separator: String = "", filterBlanks: Boolean = true) =
+    this.splitLines().map { line ->
+        line.split(separator).let {
+            if (filterBlanks) {
+                it.filter { it.isNotBlank() }
+            } else {
+                it
+            }
+        }
+    }
 
 fun <T> String.toGrid(separator: String = "", mapCell: ((String) -> T)): List<List<T>> =
     this.toGrid(separator).map { it.map(mapCell) }

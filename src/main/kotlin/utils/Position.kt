@@ -18,6 +18,12 @@ fun main() {
 data class Position(val x: Int, val y: Int) {
     val manhattenDistance = abs(x) + abs(y)
 
+    operator fun plus(other: Position) = Position(x + other.x, y + other.y)
+
+    operator fun minus(other: Position) = this + other * -1
+
+    operator fun times(factor: Int) = Position(x * factor, y * factor)
+
     fun doMovement(direction: Direction4): Position {
         return when (direction) {
             Direction4.North -> Position(x, y + 1)
@@ -47,6 +53,30 @@ data class Position(val x: Int, val y: Int) {
     fun get8Neighbours(): Sequence<Position> = sequence {
         Direction8.values().forEach { yield(this@Position.doMovement(it)) }
     }
+
+    fun getPathThrough(position: Position) = generateSequence(this) { it + position }
+
+    companion object {
+        val origin = Position(0, 0)
+    }
+}
+
+fun Pair<Position, Position>.getLine(): List<Position> {
+    val p1 = this.first
+    val p2 = this.second
+    if (p1.x != p2.x && p1.y != p2.y) throw NotImplementedError()
+    return if (p1.x == p2.x) {
+        val range = (if (p1.y <= p2.y) (p1.y..p2.y) else (p1.y downTo p2.y))
+        range.map { y -> Position(p1.x, y) }
+    } else {
+        val range = (if (p1.x <= p2.x) (p1.x..p2.x) else (p1.x downTo p2.x))
+        range.map { x -> Position(x, p1.y) }
+    }
+}
+
+fun String.getPosition(): Position {
+    val (x, y) = this.split(",").map(String::toInt)
+    return Position(x, y)
 }
 
 enum class Direction4 {

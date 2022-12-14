@@ -45,4 +45,48 @@ internal class PositionTest {
             Position(-1, 1),
         )
     }
+    
+    @Test
+    fun `get line between two points`() {
+        Pair(Position(0,0), Position(0,4)).getLine() shouldBe listOf(
+            Position(0,0),
+            Position(0,1),
+            Position(0,2),
+            Position(0,3),
+            Position(0,4),
+        )
+
+        Pair(Position(0,0), Position(3,0)).getLine() shouldBe listOf(
+            Position(0,0),
+            Position(1,0),
+            Position(2,0),
+            Position(3,0),
+        )
+
+        Pair(Position(3,0), Position(0,0)).getLine() shouldBe listOf(
+            Position(3,0),
+            Position(2,0),
+            Position(1,0),
+            Position(0,0),
+        )
+    }
+    
+    @Test
+    fun `get path trough`() {
+        Position.origin.getPathThrough(Position(0,1)).take(3).toList() shouldBe listOf(
+            Position.origin,
+            Position(0,1),
+            Position(0,2),
+        )
+        Position.origin.getPathThrough(Position(-1,0)).take(3).toList() shouldBe listOf(
+            Position.origin,
+            Position(-1,0),
+            Position(-2,0),
+        )
+        Position.origin.getPathThrough(Position(1,1)).take(3).toList() shouldBe listOf(
+            Position.origin,
+            Position(1,1),
+            Position(2,2),
+        )
+    }
 }
