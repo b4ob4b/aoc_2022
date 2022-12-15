@@ -22,7 +22,7 @@ class Day14(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
 
     private class SandReservoir(wallInformation: String) {
         private val rocks = wallInformation.splitLines().flatMap {
-                val corners = it.split(" -> ").map { it.getPosition() }
+                val corners = it.split(" -> ").map { it.toPosition() }
                 corners.zipWithNext().flatMap { it.getLine() }
             }.toSet()
 
