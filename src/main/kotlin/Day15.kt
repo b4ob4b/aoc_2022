@@ -1,7 +1,6 @@
 import utils.*
 import kotlin.math.abs
 
-
 fun main() {
     Day15(IO.TYPE.SAMPLE).test(26, 56000011L)
     Day15().solve()
