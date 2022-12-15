@@ -58,6 +58,10 @@ data class Position(val x: Int, val y: Int) {
 
     companion object {
         val origin = Position(0, 0)
+        val up = Position(0, 1)
+        val right = Position(1, 0)
+        val left = Position(-1, 0)
+        val down = Position(0, -1)
     }
 }
 
@@ -74,8 +78,16 @@ fun Pair<Position, Position>.getLine(): List<Position> {
     }
 }
 
-fun String.getPosition(): Position {
-    val (x, y) = this.split(",").map(String::toInt)
+fun String.toPosition(): Position {
+    val (x, y) = this.split(",")
+        .map {
+            if (it.contains("="))
+                it.split("=").last()
+            else
+                it
+
+        }
+        .map(String::toInt)
     return Position(x, y)
 }
 
