@@ -1,6 +1,7 @@
 import utils.*
 import kotlin.math.abs
 
+
 fun main() {
     Day15(IO.TYPE.SAMPLE).test(26, 56000011L)
     Day15().solve()
@@ -59,25 +60,17 @@ class Day15(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
     private fun Position.calculateTuningFrequency() = this.x * 4000000L + this.y
 
     private fun Position.boundaryOf(distance: Int): Set<Position> {
-        val diagonalsNeighbours = listOf(
-            Position(1, 1),
-            Position(1, -1),
-            Position(-1, 1),
-            Position(-1, -1),
-        )
-        val visited = mutableSetOf<Position>()
-        val sensor = this
-        val queue = ArrayDeque<Position>()
-        queue.add(Position(sensor.x + distance, sensor.y))
-        while (queue.isNotEmpty()) {
-            val point = queue.removeFirst()
-            if (visited.contains(point)) continue
-            visited.add(point)
-            diagonalsNeighbours
-                .map { point + it }
-                .filter { (it - this).manhattenDistance == distance }
-                .forEach { queue.add(it) }
-        }
-        return visited
+        val range = (0..distance)
+        val negativeRange = range.map { it * -1 }
+        val rangeReversed = range.reversed()
+        val negativeReversed = negativeRange.reversed()
+
+
+        val q1 = range.zip(rangeReversed)
+        val q2 = negativeRange.zip(rangeReversed)
+        val q3 = negativeRange.zip(negativeReversed)
+        val q4 = range.zip(negativeReversed)
+
+        return listOf(q1, q2, q3, q4).flatten().map { Position(it.first, it.second) + this }.toSet()
     }
 }
