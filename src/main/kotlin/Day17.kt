@@ -5,8 +5,29 @@ fun main() {
     Day17().solve()
 }
 
-class Day17(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType) {
+class Day17(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("Pyroclastic Flow", inputType = inputType) {
 
+    override fun part1(): Int {
+        val tetris = Tetris(input)
+        tetris.playRounds(2022)
+        return tetris.getTowerHeight()
+    }
+
+    override fun part2(): Long {
+        val rounds = 1_000_000_000_000L
+        val offsetRounds = 1729
+        val repeatingRounds = 1735
+        val repeatedHeight = 2720
+
+        val repeatingHeights = (rounds - offsetRounds) / repeatingRounds
+        val remainingRounds = (rounds - offsetRounds) % repeatingHeights
+
+        val tetris = Tetris(input)
+        tetris.playRounds(remainingRounds.toInt() + offsetRounds)
+
+        return repeatingHeights * repeatedHeight + tetris.getTowerHeight()
+    }
+    
     class Tetris(gasJet: String) {
 
         private var gasJetStream = sequence {
@@ -30,12 +51,8 @@ class Day17(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
         )
 
         private fun Shape.move(direction: Char) = when (direction) {
-            '<' -> if (this.touchesLeft()) {
-                Position.origin
-            } else Position.left
-            '>' -> if (this.touchesRight()) {
-                Position.origin
-            } else Position.right
+            '<' -> if (this.touchesLeft()) Position.origin else Position.left
+            '>' -> if (this.touchesRight()) Position.origin else Position.right
             else -> Position.origin
         }
 
@@ -59,10 +76,13 @@ class Day17(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
         fun getTowerHeight() = (rocks.maxOfOrNull { it.y } ?: 0)
 
         fun playRounds(rounds: Int) {
+            
             for (stepNumber in (0 until rounds)) {
+                
                 val currentShape = shapes[stepNumber % shapes.size].invoke()
                 val yOffset = getTowerHeight() - currentShape.getLowestYPosition() + 3
                 currentShape.offset += Position(0, yOffset)
+                
                 while (true) {
                     when (currentShape.state) {
                         State.Falling -> {
@@ -85,24 +105,6 @@ class Day17(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
                 }
             }
         }
-
-        override fun toString(): String {
-            val height = getTowerHeight() + rocks.maxOf { it.y } + 1
-            val wallPositions = (0..height).flatMap { height -> walls.toList().map { wall -> Position(wall, height) } }
-            return Matrix(walls.second + 1, height) { "." }.insertAt(wallPositions.associateWith { "|" }).insertAt(bottom.associateWith { "=" })
-                .insertAt(rocks.map { it }.associateWith { "#" }).transpose().flipHorizontal().toString()
-        }
-
-    }
-
-    override fun part1(): Any? {
-        val tetris = Tetris(input)
-        tetris.playRounds(2022)
-        return tetris.getTowerHeight()
-    }
-
-    override fun part2(): Any? {
-        return "not yet implement"
     }
 
     private sealed class Shape(
@@ -154,5 +156,5 @@ class Day17(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
         ), Position(4, 1)
     )
 
-    enum class State { Falling, Sliding, Resting }
+    enum class State { Falling, Sliding, Resting,  }
 }           
