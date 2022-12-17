@@ -1,18 +1,41 @@
-import utils.Day
-import utils.IO
-import utils.splitLines
+import utils.*
 
 fun main() {
-    Day13(IO.TYPE.SAMPLE).test(13)
-    Day13().test(6428)
+    Day13(IO.TYPE.SAMPLE).test(13, 140)
     Day13().solve()
 }
 
-class Day13(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType) {
+class Day13(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("Distress Signal", inputType = inputType) {
 
+    private val pairs = input
+        .split("\n\n")
+        .flatMap { it.splitLines().zipWithNext() }
+        .map { (left, right) -> Packet.from(left) to Packet.from(right) }
 
-    sealed class Value() {
-        abstract infix fun compareTo(other: Value): Int
+    private val dividerPackets = listOf(
+        Packet.from("[[2]]"),
+        Packet.from("[[6]]"),
+    )
+
+    override fun part1(): Int {
+        return pairs
+            .map { (left, right) -> left compareTo right }
+            .mapIndexedNotNull { index, result -> if (result != 1) index + 1 else null }
+            .sum()
+    }
+
+    override fun part2(): Int {
+        return pairs
+            .flatMap { listOf(it.first, it.second) }
+            .let { it + dividerPackets }
+            .sorted()
+            .mapIndexedNotNull { index, packet ->
+                if (dividerPackets.contains(packet)) index + 1 else null
+            }.product()
+    }
+
+    sealed class Value() : Comparable<Value> {
+        abstract override infix fun compareTo(other: Value): Int
 
         companion object {
             fun from(information: String): Value {
@@ -67,7 +90,6 @@ class Day13(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
             }
         }
 
-
         companion object {
             fun from(information: String): Packet {
                 if (information.isEmpty()) return Packet(emptyList())
@@ -90,21 +112,5 @@ class Day13(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
                 return Packet(children)
             }
         }
-
-    }
-
-    override fun part1(): Int {
-        val pairs = input.split("\n\n").flatMap { it.splitLines().zipWithNext() }.map { (left, right) -> Packet.from(left) to Packet.from(right) }
-
-        return pairs.mapIndexed { index, pair ->
-                val result = pair.first compareTo pair.second
-                if (result <= 0) {
-                    (index + 1)
-                } else 0
-            }.sum()
-    }
-
-    override fun part2(): Any? {
-        return "not yet implement"
     }
 }           
