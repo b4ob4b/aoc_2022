@@ -47,3 +47,6 @@ fun String.toGrid(separator: String = "", filterBlanks: Boolean = true) =
 
 fun <T> String.toGrid(separator: String = "", mapCell: ((String) -> T)): List<List<T>> =
     this.toGrid(separator).map { it.map(mapCell) }
+
+fun String.toPosition3D() = this.split(",").map { it.toInt() }
+    .let { (x,y,z) -> Position3D(x,y,z) }
