@@ -26,9 +26,11 @@ fun main() {
     // [[2, 3, 4], [5, 6, 7]]
 }
 
-fun <T> T.print() = println(this)
+fun <T> T.print() = this.also { println(it) }
 
 fun String.splitLines() = split("\n")
+
+fun String.splitLinesToInt() = split("\n").map(String::toInt)
 
 fun String.binaryToDecimal() = Integer.parseInt(this, 2)
 
