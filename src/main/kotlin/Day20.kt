@@ -7,16 +7,19 @@ fun main() {
 
 class Day20(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType) {
 
-    override fun part1() = Ring(input).spin().getGroveCoordinates(setOf(1000, 2000, 3000)).sum().toInt()
+    private val groovePositions = setOf(1000, 2000, 3000)
+    private val decryptionKey = 811589153L
+
+    override fun part1() = Ring(input).spin().getGroveCoordinates(groovePositions).sum().toInt()
 
     override fun part2(): Long {
         val ring = Ring(input)
         repeat(10) {
-            ring.spin(811589153)
+            ring.spin(decryptionKey)
         }
-        return ring.getGroveCoordinates(setOf(1000, 2000, 3000)).map { it * 811589153L }.sum()
+        return ring.getGroveCoordinates(groovePositions).sumOf { it * decryptionKey }
     }
-    
+
     class Ring(input: String) {
 
         private val ring = ArrayDeque<Pair<Int, Long>>()
