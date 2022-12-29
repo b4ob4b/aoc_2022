@@ -1,93 +1,112 @@
 import utils.*
+import utils.Direction8.*
 
 fun main() {
-    Day23(IO.TYPE.SAMPLE2).test(1)
+    Day23(IO.TYPE.SAMPLE).test(110, 20)
     Day23().solve()
 }
 
 class Day23(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType) {
-
-    private val elf = "#"
-
-    class DirectionDecision {
-        val ring = ArrayDeque<Pair<Set<Direction8>, Direction8>>(
-            listOf(
-                setOf(Direction8.NorthEast, Direction8.North, Direction8.NorthWest) to Direction8.North,
-                setOf(Direction8.SouthEast, Direction8.South, Direction8.SouthWest) to Direction8.South,
-                setOf(Direction8.NorthWest, Direction8.West, Direction8.SouthWest) to Direction8.West,
-                setOf(Direction8.NorthEast, Direction8.East, Direction8.SouthEast) to Direction8.East,
-            )
-        )
-
-        fun findDirection(freeDirections: Set<Direction8>): Direction8? {
-            for (i in ring.indices) {
-                val current = ring.get(i)
-                if (current.first.intersect(freeDirections).size == 3) {
-                    ring.addLast(ring.removeAt(i))
-                    return current.second
-                }
-            }
-            return null
-        }
-    }
-
-    data class Elf(
-        var position: Position,
-        var possibleDirections: Set<Direction8> = emptySet(),
-        var proposedPosition: Position = Position.origin,
-        val directionDecision: DirectionDecision = DirectionDecision()
-    ) {
-        fun getProposedDirection() = directionDecision.findDirection(possibleDirections)
-        
-        fun chooseNewPosition(duplicates: Set<Position>) {
-            if (proposedPosition !in duplicates) {
-                position = proposedPosition
-            }
-        }
-    }
-
-    override fun part1(): Any? {
-        val field = input.toGrid().toField()
-
-        val elfs = field.search(elf).map { Elf(it) }.toSet()
-        val emptyField = field.insertAt(elfs.associate { it.position to "." })
-
-        emptyField.insertAt(elfs.associate { it.position to elf }).print()
-        println()
+    override fun part1(): Int {
+        val groove = Groove(input)
 
         repeat(10) {
-            elfs.forEach { elf ->
-                elf.possibleDirections = Direction8.values().filter { elf.position.doMovement(it) !in elfs.map { it.position } }.toSet()
-                if (elf.possibleDirections.size < 8) {
-                    val direction = elf.getProposedDirection()
-                    if (direction == null) {
-                        elf.proposedPosition = elf.position
-                    } else {
-                        elf.proposedPosition = elf.position.doMovement(direction)
-                    }
+            groove.proposePosition()
+            groove.moveToPosition()
+        }
+
+        return groove.getNumberOfGroundTiles()
+    }
+
+    override fun part2(): Int {
+        val groove = Groove(input)
+        var round = 0
+        while (true) {
+            round++
+            groove.proposePosition()
+            if (groove.didElvesStop()) break
+            groove.moveToPosition()
+        }
+
+        return round
+    }
+
+    class Groove(val input: String) {
+        private val elf = "#"
+        private val directionDecision = DirectionDecision()
+
+        private val field = input.toGrid().toField()
+        private val elves = field.search(elf).map { Elf(it) }.toSet()
+
+        fun proposePosition() {
+            elves.forEach { elf ->
+                val possibleDirections = Direction8.values().filter { elf.position.doMovement(it) !in elves.map { it.position } }.toSet()
+                val direction = directionDecision.findDirection(possibleDirections)
+                elf.proposedPosition = if (direction == null) {
+                    elf.position
                 } else {
-                    elf.proposedPosition = elf.position
+                    elf.position.doMovement(direction)
                 }
             }
+        }
 
-//            if (elfs.all { it.position == it.proposedPosition }) break
+        fun moveToPosition() {
+            val duplicates = elves.groupingBy { it.proposedPosition }.eachCount().filter { it.value > 1 }.keys
 
-            val duplicates = elfs.groupingBy { it.proposedPosition }.eachCount().filter { it.value > 1 }.keys
-
-            elfs.forEach { elf ->
+            elves.forEach { elf ->
                 elf.chooseNewPosition(duplicates)
             }
-            println()
-            println("round: ${it + 1}")
-            emptyField.insertAt(elfs.associate { it.position to elf }).print()
-            println()
+            directionDecision.rotate()
+        }
+
+        fun didElvesStop() = elves.all { it.position == it.proposedPosition }
+
+        fun getNumberOfGroundTiles(): Int {
+            val minX = elves.minOf { it.position.x }
+            val maxX = elves.maxOf { it.position.x }
+            val minY = elves.minOf { it.position.y }
+            val maxY = elves.maxOf { it.position.y }
+
+            return ((maxX - minX + 1) * (maxY - minY + 1) - elves.count())
+        }
+
+        private class DirectionDecision {
+            private val ring = ArrayDeque(
+                listOf(
+                    setOf(NorthEast, North, NorthWest) to North,
+                    setOf(SouthEast, South, SouthWest) to South,
+                    setOf(NorthWest, West, SouthWest) to West,
+                    setOf(NorthEast, East, SouthEast) to East,
+                )
+            )
+
+            fun findDirection(freeDirections: Set<Direction8>): Direction8? {
+                if (freeDirections.size == 8) return null
+                for (i in ring.indices) {
+                    val current = ring.get(i)
+                    if (current.first.intersect(freeDirections).size == 3) {
+                        return current.second
+                    }
+                }
+                return null
+            }
+
+            fun rotate() {
+                ring.addLast(ring.removeFirst())
+            }
         }
 
 
-        return "not yet implement"
-    }
+        data class Elf(
+            var position: Position,
+            var proposedPosition: Position = Position.origin,
+        ) {
+            fun chooseNewPosition(duplicates: Set<Position>) {
+                if (proposedPosition !in duplicates) {
+                    position = proposedPosition
+                }
+            }
+        }
 
-    override fun part2(): Any? {
-        return "not yet implement"
     }
 }           
