@@ -24,10 +24,11 @@ data class Position(val x: Int, val y: Int) {
 
     operator fun times(factor: Int) = Position(x * factor, y * factor)
 
-    fun doMovement(direction: Direction4): Position {
+    fun doMovement(direction: Direction4, northUp: Boolean = true): Position {
+        val step = if(northUp) 1 else -1
         return when (direction) {
-            Direction4.North -> Position(x, y + 1)
-            Direction4.South -> Position(x, y - 1)
+            Direction4.North -> Position(x, y + step)
+            Direction4.South -> Position(x, y + (-1 * step))
             Direction4.East -> Position(x + 1, y)
             Direction4.West -> Position(x - 1, y)
         }
