@@ -14,8 +14,7 @@ data class Matrix<T>(val matrix: List<List<T>>) {
     val colIndices = 0 until numberOfCols
 
     operator fun get(position: Position) = matrix[position.x][position.y]
-
-    operator fun get(point: MatrixPoint) = matrix[point.row][point.col]
+    operator fun get(point: utils.matrix.Position) = matrix[point.row][point.col]
 
     fun <T> search(element: T) = sequence {
         (0 until numberOfRows).flatMap { row ->
