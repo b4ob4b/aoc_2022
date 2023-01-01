@@ -3,6 +3,7 @@ package utils
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
+import utils.matrix.Matrix
 
 internal class MatrixTest {
 

@@ -1,4 +1,5 @@
 import utils.*
+import utils.matrix.Matrix
 
 fun main() {
     Day12(IO.TYPE.SAMPLE).test(31, 29)

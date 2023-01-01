@@ -1,5 +1,7 @@
 package utils
 
+import utils.navigation.Direction4
+import utils.navigation.Direction8
 import kotlin.math.abs
 
 fun main() {
@@ -91,12 +93,3 @@ fun String.toPosition(): Position {
         .map(String::toInt)
     return Position(x, y)
 }
-
-enum class Direction4 {
-    North, East, South, West
-}
-
-enum class Direction8 {
-    North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest
-}
-

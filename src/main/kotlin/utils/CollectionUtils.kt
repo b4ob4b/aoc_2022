@@ -1,5 +1,7 @@
 package utils
 
+import utils.matrix.Matrix
+
 fun main() {
     listOf(1,2,3,1,2,1).allIndicesOf(1).toList().print()
     // [0, 3, 5]

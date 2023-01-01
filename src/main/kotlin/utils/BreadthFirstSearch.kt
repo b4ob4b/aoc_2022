@@ -1,5 +1,7 @@
 package utils
 
+import utils.matrix.Matrix
+
 class BreadthFirstSearch<T>(private val matrix: Matrix<T>) {
 
     fun findShortestPathBetween(from: Position, to: Position, test: (position: Position, neighbour: Position) -> Boolean): List<Position> {
