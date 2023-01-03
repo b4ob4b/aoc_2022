@@ -1,6 +1,5 @@
 import utils.Day
 import utils.IO
-import utils.matrix.Matrix
 import utils.matrix.Position
 import utils.navigation.Direction4
 import utils.navigation.Direction4.*
@@ -14,42 +13,45 @@ fun main() {
 
 class Day24(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("Blizzard Basin", inputType = inputType) {
 
-    private val valleyToTime = mutableMapOf<Int, Valley>()
+    private val valleyOfTimes = mutableMapOf<Int, Valley>()
     private val field = input.toGrid()
     private val start = Position(0, 1)
     private val end = Position(field.size - 1, field.last().indexOf("."))
-
-    private fun getValleyOf(minute: Int): Valley {
-        if (minute in valleyToTime.keys) return valleyToTime[minute]!!
-        if (minute == 0) {
-            valleyToTime[minute] = Valley(input.toGrid())
-            return valleyToTime[minute]!!
-        } else {
-            val valley = getValleyOf(minute - 1)
-            valley.moveBlizzards()
-            valleyToTime[minute] = valley
-            return valleyToTime[minute]!!
-        }
-    }
+    private var timeStartToEnd = -1
 
     override fun part1(): Int {
+        timeStartToEnd = bfs(start, end)
+        return timeStartToEnd
+    }
+
+    override fun part2(): Int {
+        val offset = bfs(end, start, timeStartToEnd) + timeStartToEnd
+        return bfs(start, end, offset) + offset
+    }
+
+    private fun bfs(start: Position, end: Position, timeOffset: Int = 0): Int {
         val visited = mutableSetOf<Triple<Position, Int, Position>>()
 
         val queue = ArrayDeque<Triple<Position, Int, Position>>()
         queue.add(Triple(start, 0, start))
 
+        var minimumTime = -1
+
         while (queue.isNotEmpty()) {
             val triple = queue.removeFirst()
-
-            val position = triple.first
-            val minute = triple.second + 1
 
             if (triple in visited) continue
             visited.add(triple)
 
-            val valley = getValleyOf(minute)
-            if (position == end) return minute
+            val position = triple.first
+            val minute = triple.second + 1
 
+            if (position == end) {
+                minimumTime = minute
+                break
+            }
+
+            val valley = valleyThroughTimes(minute + timeOffset)
             if (valley isBlockedFor position) continue
 
             val positions = position.get4Neighbours().toSet() + position
@@ -58,76 +60,20 @@ class Day24(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("Blizzard Basin", inputTyp
                 queue.add(Triple(newPosition, minute, position))
             }
         }
-
-        return -1
+        return minimumTime
     }
 
-    override fun part2(): Int {
-        val timeOffset = if (isTest) 18 else 232
-        val visited = mutableSetOf<Triple<Position, Int, Position>>()
-
-        val queue = ArrayDeque<Triple<Position, Int, Position>>()
-        queue.add(Triple(end, 0, end))
-
-        var endToStart = -1
-
-        while (queue.isNotEmpty()) {
-            val triple = queue.removeFirst()
-
-            val position = triple.first
-            val minute = triple.second + 1
-
-            if (triple in visited) continue
-            visited.add(triple)
-
-            val valley = getValleyOf(minute + timeOffset)
-            if (position == start) {
-                endToStart = minute
-                break
-            }
-
-            if (valley isBlockedFor position) continue
-
-            val positions = position.get4Neighbours().toSet() + position
-
-            positions.forEach { newPosition ->
-                queue.add(Triple(newPosition, minute, position))
-            }
+    private fun valleyThroughTimes(minute: Int): Valley {
+        if (minute in valleyOfTimes.keys) return valleyOfTimes[minute]!!
+        return if (minute == 0) {
+            valleyOfTimes[minute] = Valley(input.toGrid())
+             valleyOfTimes[minute]!!
+        } else {
+            val valley = valleyThroughTimes(minute - 1)
+            valley.moveBlizzards()
+            valleyOfTimes[minute] = valley
+            valleyOfTimes[minute]!!
         }
-
-        val timeOffset2 = timeOffset + endToStart
-
-        val queue2 = ArrayDeque<Triple<Position, Int, Position>>()
-        queue2.add(Triple(start, 0, start))
-
-        val visited2 = mutableSetOf<Triple<Position, Int, Position>>()
-
-        var startToEnd = -1
-        while (queue2.isNotEmpty()) {
-            val triple = queue2.removeFirst()
-
-            val position = triple.first
-            val minute = triple.second + 1
-
-            if (triple in visited2) continue
-            visited2.add(triple)
-
-            val valley = getValleyOf(minute + timeOffset2)
-            if (position == end) {
-                startToEnd = minute
-                break
-            }
-
-            if (valley isBlockedFor position) continue
-
-            val positions = position.get4Neighbours().toSet() + position
-
-            positions.forEach { newPosition ->
-                queue2.add(Triple(newPosition, minute, position))
-            }
-        }
-
-        return startToEnd + endToStart + timeOffset
     }
 
     class Valley(field: List<List<String>>) {
@@ -135,9 +81,7 @@ class Day24(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("Blizzard Basin", inputTyp
         private val ground = field.toMatrix()
         private val wall = "#"
         private val walls = ground.search(wall).toSet()
-        var blizzards = field.parseBlizzards()
-        var position = Position(0, 0)
-
+        private var blizzards = field.parseBlizzards()
 
         fun moveBlizzards() {
             blizzards = blizzards.map { move(it) }
@@ -173,7 +117,7 @@ class Day24(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("Blizzard Basin", inputTyp
             }
         }
 
-        private fun String.isBlizzard() = """[>v\^<]""".toRegex().containsMatchIn(this)
+        private fun String.isBlizzard() = """[>v^<]""".toRegex().containsMatchIn(this)
 
 
         private fun String.toDirection() = when (this) {
@@ -184,35 +128,7 @@ class Day24(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("Blizzard Basin", inputTyp
             else -> throw Exception("unknown direction: $this")
         }
 
-        private fun Direction4.asString() = when (this) {
-            East -> ">"
-            South -> "v"
-            West -> "<"
-            North -> "^"
-        }
-
-        private fun List<Blizzard>.asPositionStringPair(): Map<Position, String> {
-            val duplicates = this.groupingBy { it.position }.eachCount().filter { it.value > 1 }
-
-            return this.associate {
-                val position = it.position
-                if (position in duplicates.keys) {
-                    position to duplicates[position].toString()
-                } else {
-                    it.position to it.direction.asString()
-                }
-            }
-        }
-
         data class Blizzard(val position: Position, val direction: Direction4)
-
-        override fun toString(): String {
-            return Matrix(ground.numberOfRows, ground.numberOfCols) { "." }
-                .insertAt(walls.associateWith { "#" })
-                .insertAt(blizzards.asPositionStringPair())
-                .insertAt(position, if (position in blizzards.map { it.position }) "X" else "E")
-                .toString()
-        }
 
     }
 }
