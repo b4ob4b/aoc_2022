@@ -1,5 +1,6 @@
 import utils.*
 import utils.matrix.Matrix
+import utils.matrix.Position
 
 fun main() {
     Day12(IO.TYPE.SAMPLE).test(31, 29)
@@ -26,7 +27,7 @@ class Day12(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
             if (this[pos] == goal) return steps
             pos.get4Neighbours().forEach { neighbour ->
                 val currentHeight = this[pos]
-                if (neighbour.x in this.rowIndices && neighbour.y in this.colIndices) {
+                if (neighbour.row in this.rowIndices && neighbour.col in this.colIndices) {
                     val neighbourHeight = this[neighbour]
                     if (neighbourHeight <= (1 + currentHeight)) {
                         queue.add(neighbour to (steps + 1))

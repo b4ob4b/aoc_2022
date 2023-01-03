@@ -1,9 +1,10 @@
-package utils
+package utils.matrix
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
-import utils.matrix.Matrix
+import utils.toGrid
+import utils.toMatrix
 
 internal class MatrixTest {
 

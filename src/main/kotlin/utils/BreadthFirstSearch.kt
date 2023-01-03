@@ -1,5 +1,6 @@
 package utils
 
+import utils.matrix.Position
 import utils.matrix.Matrix
 
 class BreadthFirstSearch<T>(private val matrix: Matrix<T>) {
@@ -15,7 +16,7 @@ class BreadthFirstSearch<T>(private val matrix: Matrix<T>) {
             visited.add(position)
             if (matrix[position] == goal) return path
             position.get4Neighbours().forEach { neighbour ->
-                if (neighbour.x in matrix.rowIndices && neighbour.y in matrix.colIndices) {
+                if (neighbour.row in matrix.rowIndices && neighbour.col in matrix.colIndices) {
                     if (test(position, neighbour) || matrix[neighbour] == goal) {
                         queue.add(neighbour to path + neighbour)
                     }

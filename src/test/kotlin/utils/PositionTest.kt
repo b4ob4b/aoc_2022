@@ -3,6 +3,7 @@ package utils
 import io.kotest.matchers.collections.shouldNotContainInOrder
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
+import utils.navigation.Direction4
 
 internal class PositionTest {
 

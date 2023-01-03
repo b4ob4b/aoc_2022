@@ -1,6 +1,5 @@
 package utils.matrix
 
-import utils.Position
 import utils.toMatrix
 
 data class Matrix<T>(val matrix: List<List<T>>) {
@@ -13,8 +12,7 @@ data class Matrix<T>(val matrix: List<List<T>>) {
     val rowIndices = 0 until numberOfRows
     val colIndices = 0 until numberOfCols
 
-    operator fun get(position: Position) = matrix[position.x][position.y]
-    operator fun get(point: utils.matrix.Position) = matrix[point.row][point.col]
+    operator fun get(point: Position) = matrix[point.row][point.col]
 
     fun <T> search(element: T) = sequence {
         (0 until numberOfRows).flatMap { row ->
@@ -47,15 +45,15 @@ data class Matrix<T>(val matrix: List<List<T>>) {
     fun <T> insertAt(position: Position, element: T): Matrix<T> {
         return matrix.mapIndexed { rowIndex, rows -> 
             rows.mapIndexed { colIndex, cell -> 
-                if(rowIndex == position.x && colIndex == position.y) element else cell as T 
+                if(rowIndex == position.row && colIndex == position.col) element else cell as T
             }
         }.toMatrix()
     }
 
     fun <T> insertAt(positionMap: Map<Position,T>): Matrix<T> {
-        return matrix.mapIndexed { rowIndex, rows ->
-            rows.mapIndexed { colIndex, cell ->
-                if(positionMap.containsKey(Position(rowIndex, colIndex))) positionMap[Position(rowIndex, colIndex)] as T else cell as T
+        return matrix.mapIndexed { row, rows ->
+            rows.mapIndexed { col, cell ->
+                if(positionMap.containsKey(Position(row, col))) positionMap[Position(row, col)] as T else cell as T
             }
         }.toMatrix()
     }
