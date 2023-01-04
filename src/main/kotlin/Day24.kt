@@ -30,21 +30,21 @@ class Day24(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("Blizzard Basin", inputTyp
     }
 
     private fun bfs(start: Position, end: Position, timeOffset: Int = 0): Int {
-        val visited = mutableSetOf<Triple<Position, Int, Position>>()
+        val visited = mutableSetOf<Pair<Position, Int>>()
 
-        val queue = ArrayDeque<Triple<Position, Int, Position>>()
-        queue.add(Triple(start, 0, start))
+        val queue = ArrayDeque<Pair<Position, Int>>()
+        queue.add(start to 0)
 
         var minimumTime = -1
 
         while (queue.isNotEmpty()) {
-            val triple = queue.removeFirst()
+            val pair = queue.removeFirst()
 
-            if (triple in visited) continue
-            visited.add(triple)
+            if (pair in visited) continue
+            visited.add(pair)
 
-            val position = triple.first
-            val minute = triple.second + 1
+            val position = pair.first
+            val minute = pair.second + 1
 
             if (position == end) {
                 minimumTime = minute
@@ -57,7 +57,7 @@ class Day24(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("Blizzard Basin", inputTyp
             val positions = position.get4Neighbours().toSet() + position
 
             positions.forEach { newPosition ->
-                queue.add(Triple(newPosition, minute, position))
+                queue.add(newPosition to minute)
             }
         }
         return minimumTime
