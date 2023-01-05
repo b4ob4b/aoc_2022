@@ -1,6 +1,5 @@
 import utils.Day
 import utils.IO
-import utils.print
 import utils.splitLines
 import kotlin.math.pow
 
@@ -17,7 +16,7 @@ class Day25(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("Full of Hot Air", inputTy
     }
 
     override fun part2() = "no part 2"
-    
+
     private fun String.toDecimal() = this.toList().reversed().mapIndexed { magnitude, c ->
         val number1 = when (c) {
             '-' -> -1
