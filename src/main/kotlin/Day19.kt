@@ -3,6 +3,8 @@ import utils.IO
 import utils.print
 import utils.splitLines
 import java.util.*
+import kotlin.collections.ArrayDeque
+import kotlin.math.min
 
 fun main() {
     Day19(IO.TYPE.SAMPLE).test(33)
@@ -10,56 +12,97 @@ fun main() {
 }
 
 class Day19(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType) {
-    
+
     private val bluePrints = input.splitLines()
         .map { it.split(""": |\. |\.""".toRegex()).drop(1).dropLast(1) }
         .map { it.toBlueprint() }
 
-    data class Robot(val cost: Map<Mineral, Int> = mapOf(), val type: Mineral)
+    data class Robot(val cost: MineralMap, val type: Mineral)
 
     enum class Mineral { Ore, Clay, Obsidian, Geode }
+    enum class Choice {
+        Ore, Clay, Obsidian, Geode, Save;
 
-    enum class Choice { Buy, Save }
+        fun toMineral() = Mineral.valueOf(toString())
 
-    override fun part1(): Any? {
-        dfs(bluePrints.first(), 24, listOf(Robot(type = Mineral.Ore)), emptyList()).print()
-        return "not yet implement"
+        companion object {
+            fun of(mineral: Day19.Mineral) = Choice.valueOf(mineral.toString())
+        }
     }
 
-    private fun dfs(blueprint: List<Robot>, time: Int, robots: List<Robot>, savings: List<Mineral>): Int {
-        // collect
-        val newSavings = robots.map { it.type } + savings
-        val remainingTime = time - 1
+    private fun List<Robot>.maxOf(mineral: Mineral) = this.maxOfOrNull { it.cost.map[mineral] ?: 0 } ?: 0
 
-        if (remainingTime == 0) return newSavings.filter { it == Mineral.Geode }.size
+    override fun part1(): Any? {
+        bluePrints.print()
 
-        // choice
-        val robotsToBuy = blueprint.filter { blueprintRobot ->
-            blueprintRobot.cost.all { (mineral, amount) ->
-                val saving = newSavings.groupingBy { it }.eachCount()
-                if (mineral !in saving.keys) false
-                else newSavings.groupingBy { it }.eachCount()[mineral]!! >= amount
+        val bluePrint = bluePrints.first()
+
+        val seen = mutableSetOf<Triple<Int, MineralMap, MineralMap>>()
+        val queue = ArrayDeque<Triple<Int, MineralMap, MineralMap>>()
+        queue.add(Triple(0, MineralMap(mapOf(Mineral.Ore to 1)), MineralMap()))
+
+        val goal = 24
+
+        while (queue.isNotEmpty()) {
+            val triple = queue.removeFirst()
+
+            if (triple in seen) continue
+            seen.add(triple)
+
+            val minute = triple.first + 1
+            val robots = triple.second
+            val savings = robots + triple.third
+
+            if (minute == goal + 1) {
+                break
             }
-        }
 
-        if (robotsToBuy.isEmpty()) return dfs(blueprint, remainingTime, robots, newSavings)
-
-        return Choice.values().maxOf { choice ->
-            when (choice) {
-                Choice.Save -> dfs(blueprint, remainingTime, robots, newSavings)
-                Choice.Buy -> {
-                    robotsToBuy.maxOf { robot ->
-                        val savingsAfterPurchase = newSavings.toMutableList().also { list ->
-                            robot.cost.forEach { (mineral, amount) ->
-                                repeat(amount) { list.remove(mineral) }
-                            }
-                        }
-                        dfs(blueprint, remainingTime, robots + robot, savingsAfterPurchase)
+            val choices = buildList {
+                Mineral.values().forEach { mineral ->
+                    val needMineral = savings.of(mineral) < bluePrint.maxOf(mineral) || mineral == Mineral.Geode
+                    val canBuyRobotWithMineral = savings.contains(bluePrint.single { it.type == mineral }.cost)
+                    if (needMineral && canBuyRobotWithMineral) {
+                        add(Choice.of(mineral))
                     }
+                }
+                add(Choice.Save)
+            }
+
+            choices.forEach { choice ->
+                if (choice == Choice.Save) {
+                    queue.add(Triple(minute, robots, savings))
+                } else {
+                    val newRobot = MineralMap(choice.toMineral() to 1)
+                    queue.add(Triple(minute, robots + newRobot, savings))
                 }
             }
         }
+
+        queue.filter { it.first == goal }.maxOfOrNull { it.third.of(Mineral.Geode) }.print()
+        return "not yet implement"
     }
+
+    data class MineralMap(val map: Map<Mineral, Int> = emptyMap()) {
+        constructor(pair: Pair<Mineral, Int>) : this(mapOf(pair))
+
+        operator fun plus(other: MineralMap): MineralMap {
+            val minerals = map.keys + other.map.keys
+            val newMap = minerals.associateWith { mineral ->
+                (map[mineral] ?: 0) + (other.map[mineral] ?: 0)
+            }
+            return MineralMap(newMap)
+        }
+
+        fun contains(other: MineralMap): Boolean {
+            val minerals = map.keys + other.map.keys
+            return minerals.all { mineral ->
+                (map[mineral] ?: 0) >= (other.map[mineral] ?: 0)
+            }
+        }
+
+        fun of(mineral: Mineral) = map[mineral] ?: 0
+    }
+
 
     override fun part2(): Any? {
         return "not yet implement"
@@ -78,7 +121,7 @@ class Day19(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
                 put(mineral.toMineral(), amount.toInt())
             }
         }
-        return Robot(costs, type)
+        return Robot(MineralMap(costs), type)
     }
 
 
