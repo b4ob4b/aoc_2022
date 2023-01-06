@@ -19,67 +19,83 @@ class Day19(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
 
     data class Robot(val cost: MineralMap, val type: Mineral)
 
-    enum class Mineral { Ore, Clay, Obsidian, Geode }
+    enum class Mineral {
+        Ore, Clay, Obsidian, Geode;
+
+        fun toChoice() = Choice.valueOf(toString())
+    }
+
     enum class Choice {
         Ore, Clay, Obsidian, Geode, Save;
 
         fun toMineral() = Mineral.valueOf(toString())
-
-        companion object {
-            fun of(mineral: Day19.Mineral) = Choice.valueOf(mineral.toString())
-        }
     }
 
     private fun List<Robot>.maxOf(mineral: Mineral) = this.maxOfOrNull { it.cost.map[mineral] ?: 0 } ?: 0
 
+    data class RobotFactory(
+        val minute: Int,
+        val robots: MineralMap,
+        val robotUnderConstruction: MineralMap = MineralMap(),
+        val savings: MineralMap = MineralMap()
+    )
+
     override fun part1(): Any? {
-        bluePrints.print()
+        return bluePrints.mapIndexed { index, bluePrint ->
+            val bluePrintId = index + 1
 
-        val bluePrint = bluePrints.first()
+            val seen = mutableSetOf<RobotFactory>()
+            val queue = ArrayDeque<RobotFactory>()
+            queue.add(RobotFactory(0, MineralMap(mapOf(Mineral.Ore to 1))))
 
-        val seen = mutableSetOf<Triple<Int, MineralMap, MineralMap>>()
-        val queue = ArrayDeque<Triple<Int, MineralMap, MineralMap>>()
-        queue.add(Triple(0, MineralMap(mapOf(Mineral.Ore to 1)), MineralMap()))
+            val goal = 24
 
-        val goal = 24
+            val geodes = mutableSetOf<Int>()
 
-        while (queue.isNotEmpty()) {
-            val triple = queue.removeFirst()
+            while (queue.isNotEmpty()) {
+                val factory = queue.removeFirst()
 
-            if (triple in seen) continue
-            seen.add(triple)
+                if (factory in seen) continue
+                seen.add(factory)
 
-            val minute = triple.first + 1
-            val robots = triple.second
-            val savings = robots + triple.third
 
-            if (minute == goal + 1) {
-                break
-            }
+                val minute = factory.minute + 1
+                val savings = factory.robots + factory.savings
+                val robots = factory.robots + factory.robotUnderConstruction
 
-            val choices = buildList {
-                Mineral.values().forEach { mineral ->
-                    val needMineral = savings.of(mineral) < bluePrint.maxOf(mineral) || mineral == Mineral.Geode
-                    val canBuyRobotWithMineral = savings.contains(bluePrint.single { it.type == mineral }.cost)
-                    if (needMineral && canBuyRobotWithMineral) {
-                        add(Choice.of(mineral))
+                if (minute == goal) {
+                    geodes.add(savings.of(Mineral.Geode))
+                }
+
+                if (minute == goal + 1) {
+                    break
+                }
+
+                val choices = buildList {
+                    Mineral.values().forEach { mineral ->
+                        val needMineral =
+                            (robots.of(mineral) < bluePrint.maxOf(mineral) && savings.of(mineral) < bluePrint.maxOf(mineral) * 1.5) || mineral == Mineral.Geode
+                        val canBuyRobotWithMineral = savings.contains(bluePrint.single { it.type == mineral }.cost)
+                        if (needMineral && canBuyRobotWithMineral) {
+                            add(mineral.toChoice())
+                        }
+                    }
+                    add(Choice.Save)
+                }
+
+                choices.forEach { choice ->
+                    if (choice == Choice.Save) {
+                        queue.add(RobotFactory(minute, robots, MineralMap(), savings))
+                    } else {
+                        val newRobot = MineralMap(choice.toMineral() to 1)
+                        val cost = bluePrint.single { it.type == choice.toMineral() }.cost
+                        queue.add(RobotFactory(minute, robots, newRobot, savings - cost))
                     }
                 }
-                add(Choice.Save)
             }
 
-            choices.forEach { choice ->
-                if (choice == Choice.Save) {
-                    queue.add(Triple(minute, robots, savings))
-                } else {
-                    val newRobot = MineralMap(choice.toMineral() to 1)
-                    queue.add(Triple(minute, robots + newRobot, savings))
-                }
-            }
-        }
-
-        queue.filter { it.first == goal }.maxOfOrNull { it.third.of(Mineral.Geode) }.print()
-        return "not yet implement"
+            geodes.max() * bluePrintId
+        }.sum()
     }
 
     data class MineralMap(val map: Map<Mineral, Int> = emptyMap()) {
@@ -89,6 +105,14 @@ class Day19(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
             val minerals = map.keys + other.map.keys
             val newMap = minerals.associateWith { mineral ->
                 (map[mineral] ?: 0) + (other.map[mineral] ?: 0)
+            }
+            return MineralMap(newMap)
+        }
+
+        operator fun minus(other: MineralMap): MineralMap {
+            val minerals = map.keys + other.map.keys
+            val newMap = minerals.associateWith { mineral ->
+                (map[mineral] ?: 0) - (other.map[mineral] ?: 0)
             }
             return MineralMap(newMap)
         }
