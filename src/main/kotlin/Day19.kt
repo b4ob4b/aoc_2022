@@ -1,13 +1,10 @@
-import utils.Day
-import utils.IO
-import utils.print
-import utils.splitLines
+import utils.*
 import java.util.*
 import kotlin.collections.ArrayDeque
 import kotlin.math.min
 
 fun main() {
-    Day19(IO.TYPE.SAMPLE).test(33)
+    Day19(IO.TYPE.SAMPLE).test(33, 56 * 62)
     Day19().solve()
 }
 
@@ -40,9 +37,10 @@ class Day19(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
         val savings: MineralMap = MineralMap()
     )
 
-    override fun part1(): Any? {
+    override fun part1(): Int {
         return bluePrints.mapIndexed { index, bluePrint ->
             val bluePrintId = index + 1
+            bluePrintId.print()
 
             val seen = mutableSetOf<RobotFactory>()
             val queue = ArrayDeque<RobotFactory>()
@@ -50,31 +48,38 @@ class Day19(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
 
             val goal = 24
 
-            val geodes = mutableSetOf<Int>()
-
+            var m = 0
+            var maxGeodes = 0
+            
             while (queue.isNotEmpty()) {
                 val factory = queue.removeFirst()
 
                 if (factory in seen) continue
                 seen.add(factory)
-
-
+                
                 val minute = factory.minute + 1
-                val savings = factory.robots + factory.savings
-                val robots = factory.robots + factory.robotUnderConstruction
-
-                if (minute == goal) {
-                    geodes.add(savings.of(Mineral.Geode))
-                }
-
                 if (minute == goal + 1) {
                     break
                 }
+                
+                val savings = factory.robots + factory.savings
+                val robots = factory.robots + factory.robotUnderConstruction
+
+                if (minute !=m) {
+                    m = minute
+                    print("$m ")
+                }
+                
+                if (savings.of(Mineral.Geode) > maxGeodes) {
+                    maxGeodes = savings.of(Mineral.Geode)
+                }
 
                 val choices = buildList {
-                    Mineral.values().forEach { mineral ->
-                        val needMineral =
-                            (robots.of(mineral) < bluePrint.maxOf(mineral) && savings.of(mineral) < bluePrint.maxOf(mineral) * 1.5) || mineral == Mineral.Geode
+                    Mineral.values().filter { if ((goal - minute) > 3) true else it == Mineral.Geode }.forEach { mineral ->
+                        val needRobot = robots.of(mineral) * (goal - minute) + savings.of(mineral) < (goal - minute) * bluePrint.maxOf(mineral) 
+                        val savingsFull = savings.of(mineral) <= bluePrint.maxOf(mineral)
+
+                        val needMineral = (needRobot && savingsFull) || mineral == Mineral.Geode
                         val canBuyRobotWithMineral = savings.contains(bluePrint.single { it.type == mineral }.cost)
                         if (needMineral && canBuyRobotWithMineral) {
                             add(mineral.toChoice())
@@ -94,7 +99,7 @@ class Day19(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
                 }
             }
 
-            geodes.max() * bluePrintId
+            maxGeodes.print() * bluePrintId
         }.sum()
     }
 
