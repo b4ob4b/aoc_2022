@@ -1,5 +1,4 @@
 import utils.*
-import java.lang.Integer.max
 
 fun main() {
     Day16(IO.TYPE.SAMPLE).test(1651)
@@ -19,7 +18,7 @@ class Day16(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
     private val distances: MutableMap<String, MutableMap<String, Int>> = mutableMapOf()
 
     init {
-        valves.filter { it.rate > 0 || it.name == "AA" }.forEach { startValve ->
+        valves.filter { it.rate > 0 || it.name == "AA" }.`forEach` { startValve ->
 
             distances[startValve.name] = mutableMapOf()
 
@@ -38,9 +37,44 @@ class Day16(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
         }
     }
 
+    data class FlowManagement(val timeLeft: Int, val position: String, val opened: List<String> = emptyList(), val pressure: Int = 0)
+
     override fun part1(): Int {
-        val states = valves.associate { it.name to State.Closed }
-        return dfs(30, "AA", states)
+        val queue = ArrayDeque<FlowManagement>()
+        queue.add(FlowManagement(30, "AA"))
+
+        var maxPressure = 0
+
+        while (queue.isNotEmpty()) {
+
+            val (time, position, opened, pressure) = queue.removeFirst()
+
+            if (pressure > maxPressure) maxPressure = pressure
+
+            if (time == 0) continue
+
+            val neighbours = distances[position]!!
+            neighbours
+                .filter { it.key !in opened }
+                .forEach { (valve, distance) ->
+
+                    val timeLeft = time - distance - 1
+                    val additionalPressure = valves.single { it.name == valve }.rate * if (timeLeft == 0) 1 else timeLeft
+
+                    if (timeLeft >= 0) {
+                        queue.add(
+                            FlowManagement(
+                                timeLeft,
+                                valve,
+                                opened + valve,
+                                pressure + additionalPressure
+                            )
+                        )
+                    }
+                }
+        }
+
+        return maxPressure
     }
 
     override fun part2(): Any? {
@@ -53,24 +87,4 @@ class Day16(inputType: IO.TYPE = IO.TYPE.INPUT) : Day("", inputType = inputType)
         val tunnels: List<String>,
     )
 
-    enum class State { Open, Closed }
-
-    private fun dfs(
-        time: Int,
-        position: String,
-        states: Map<String, State>,
-    ): Int {
-        var maxFlow = 0
-
-        val states = states.toMutableMap()
-        val closedValves = distances[position]!!.filter { (name, _) -> states[name] == State.Closed }
-        for ((name, distance) in closedValves) {
-            val valve = valves.single { it.name == name }
-            val remainingTime = time - distance - 1
-            if (remainingTime <= 0) continue
-            states[name] = State.Open
-            maxFlow = max(maxFlow, dfs(remainingTime, valve.name, states) + remainingTime * valve.rate)
-        }
-        return maxFlow
-    }
 }           
