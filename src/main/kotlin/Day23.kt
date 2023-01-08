@@ -1,5 +1,6 @@
 import utils.*
-import utils.Direction8.*
+import utils.navigation.Direction8
+import utils.navigation.Direction8.*
 
 fun main() {
     Day23(IO.TYPE.SAMPLE).test(110, 20)
